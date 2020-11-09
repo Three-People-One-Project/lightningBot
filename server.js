@@ -48,7 +48,9 @@ client.on('message', (message)=> {
           console.log(results.body.name);
           console.log(results.body.id);
           let update = 'UPDATE challenges set challenge_name=$1 WHERE challenge_id=$2;';
-          let values = [results.body.name,results.body.id];
+          let final = results.body.name.replace(/\s+/g,'').toLowerCase();
+          console.log(final)
+          let values = [final,results.body.id];
           pgclient.query(update,values).then(()=>{
             console.log('success')
           }).catch(err => console.log(err))
@@ -65,11 +67,26 @@ client.on('message', (message)=> {
         console.log(err)
       })
   }
-  let challenge = message.content.split(' ')
-  if(challenge[0]==='!duel') {
-    challengeUser = challenge[1]
-    message.channel.send(`${challenge[1]}, you've been challenged to a duel by ${message.author.username}! reply !y to accept`)
+  let content = message.content.split(' ');
+  if(content[0]==='!markcomplete') {
+    let sql = 'SELECT id FROM users WHERE discordID=$1;';
+    let values = [message.author.id];
+    pgclient.query(sql,values).then(user=> {
+      console.log(user.rows[0].id);
+      let challengesql = 'SELECT id FROM challenges WHERE challenge_name=$1;';
+      let challengevalue = [content[1]]
+      pgclient.query(challengesql,challengevalue).then(challenge => {
+        console.log(challenge.rows);
+      }).catch( err => {
+        console.log('bruh')
+      })
+    })
+
   }
+  // if(challenge[0]==='!duel') {
+  //   challengeUser = challenge[1]
+  //   message.channel.send(`${challenge[1]}, you've been challenged to a duel by ${message.author.username}! reply !y to accept`)
+  // }
 
   if(message.content === '!y') {
 
