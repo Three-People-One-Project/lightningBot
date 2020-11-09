@@ -30,6 +30,10 @@ let challengeUser = ''
 
 client.on('message', (message)=> {
   if(message.content==='!cc') {
+    console.log(typeof message.author.id);
+    let usersql = 'INSERT into users(discordID) values($1);';
+    let uservalue = [message.author.id];
+    pgclient.query(usersql,uservalue).then(()=>console.log('user profile added')).catch(err=>console.log(err));
     let sql = 'SELECT * FROM challenges;';
     pgclient.query(sql)
       .then(query => {

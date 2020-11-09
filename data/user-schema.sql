@@ -4,7 +4,7 @@ DROP TABLE users;
 
 CREATE TABLE users(
   id SERIAL PRIMARY KEY,
-  discordID INTEGER
+  discordID VARCHAR(255)
 );
 
 
