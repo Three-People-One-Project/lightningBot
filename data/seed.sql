@@ -10,3 +10,5 @@ INSERT INTO challenges(challenge_id) values ('526233aefd4764272800036f');
 
 
 INSERT INTO challenges(challenge_id) values ('5efae11e2d12df00331f91a6');
+
+INSERT INTO technical(question, answer) values ('Is JavaScript a case-sensitive language? a) Yes b) No', 'a');

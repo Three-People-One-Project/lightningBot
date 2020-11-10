@@ -68,28 +68,65 @@ client.on('message', (message)=> {
       })
   }
   let content = message.content.split(' ');
+  let userId = '';
   if(content[0]==='!markcomplete') {
     let sql = 'SELECT id FROM users WHERE discordID=$1;';
     let values = [message.author.id];
-    pgclient.query(sql,values).then(user=> {
-      console.log(user.rows[0].id);
+    pgclient.query(sql,values)
+    .then(user=> {
+      // console.log(user.rows[0].id);
+      userId = user.rows[0].id;
       let challengesql = 'SELECT id FROM challenges WHERE challenge_name=$1;';
       let challengevalue = [content[1]]
-      pgclient.query(challengesql,challengevalue).then(challenge => {
+      pgclient.query(challengesql,challengevalue)
+      .then(challenge => {
         console.log(challenge.rows);
-      }).catch( err => {
-        console.log('bruh')
+        let finalSql = 'INSERT INTO completedChallenges(user_id, challenge_id) VALUES($1, $2);';
+        let finalValues = [userId, challenge.rows[0].id];
+        pgclient.query(finalSql, finalValues)
+        .then(result => {
+          const embed = new MessageEmbed()
+          .setTitle(`Completion`)
+          .setColor('#0099ff')
+          .setDescription('Congratulations on completing your code challenge')
+          .setImage('https://media.giphy.com/media/l0MYJnJQ4EiYLxvQ4/giphy-downsized-large.gif')
+          message.channel.send(embed);
+        })
+        .catch(err => console.log(err))
+      })
+      .catch( err => {
+        console.log(err)
       })
     })
 
   }
-  // if(challenge[0]==='!duel') {
-  //   challengeUser = challenge[1]
-  //   message.channel.send(`${challenge[1]}, you've been challenged to a duel by ${message.author.username}! reply !y to accept`)
-  // }
 
-  if(message.content === '!y') {
-
+  if(content[0]==='!duel') {
+    if(content[1] !== '!y'){
+      message.channel.send(`${content[1]}, you've been challenged to a duel by <@${message.author.id}>! reply !y to accept`)
+    }
+    else if(content[1] === '!y'){
+      let sql = 'SELECT * from technical;';
+      pgclient.query(sql)
+      .then(results => {
+        message.channel.send('You Accepted the Challenge');
+        let count = 10;
+          let timeout = setInterval(() => {
+            let question = results.rows[0].question.split('?');
+            const embed = new MessageEmbed()
+            .setTitle(question[0])
+            .setColor('#0099ff')
+            .setDescription(question[1])
+            message.channel.send(embed);
+            count--;
+            console.log(count);
+            if(!count){
+              clearInterval(timeout);
+            }
+          }, 1000)
+        
+      })
+    }
   }
 })
 
