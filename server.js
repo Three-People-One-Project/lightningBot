@@ -1,5 +1,12 @@
 'use strict';
 
+let challenger = null;
+let opponent = null;
+let question = null;
+let count = 11;
+let challengerPoints = 0;
+let opponentPoints = 0;
+
 const {Client,MessageEmbed} = require('discord.js')
 require('dotenv').config();
 const pg = require('pg');
@@ -102,32 +109,187 @@ client.on('message', (message)=> {
   }
 
   if(content[0]==='!duel') {
+
+    console.log(opponent);
+    console.log(challenger);
+
+    if(question === null && challenger !== null && opponent !== null){
+      message.channel.send(`<@${opponent}> has accepted the challenge from <@${challenger}>`);
+    }
+
     if(content[1] !== '!y'){
       message.channel.send(`${content[1]}, you've been challenged to a duel by <@${message.author.id}>! reply !y to accept`)
+      opponent = content[1].split('<')[1].split('@')[1].split('>')[0].split('!')[1];
+      challenger = message.author.id;
+
+      
     }
-    else if(content[1] === '!y'){
-      let sql = 'SELECT * from technical;';
-      pgclient.query(sql)
-      .then(results => {
-        message.channel.send('You Accepted the Challenge');
-        let count = 10;
-          let timeout = setInterval(() => {
-            let question = results.rows[0].question.split('?');
-            const embed = new MessageEmbed()
-            .setTitle(question[0])
-            .setColor('#0099ff')
-            .setDescription(question[1])
-            message.channel.send(embed);
-            count--;
-            console.log(count);
-            if(!count){
-              clearInterval(timeout);
-            }
-          }, 1000)
-        
-      })
+    else if(content[1] === '!y' && challenger !== null){
+
+
+      if(message.author.id === opponent){
+       generateQuestionnaire(message);
+      }
+
+      
     }
   }
+
+  if(challenger === message.author.id && question !== null){
+
+   let sql = 'SELECT * FROM technical WHERE question=$1;';
+   let values = [question];
+
+   console.log(question);
+
+   pgclient.query(sql, values)
+   .then( answers => {
+     if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer){
+       challengerPoints++;
+       message.channel.send(`<@${challenger}> answered correctly`);
+
+       if(count > 0){
+         setTimeout( () => {
+          generateQuestionnaire(message);
+
+         },2000)
+       }
+     } else{
+       message.channel.send(`<@${challenger}> answered wrong`)
+     }
+
+   })
+  }
+
+  if(opponent === message.author.id && question !== null){
+
+    let sql = 'SELECT * FROM technical WHERE question=$1;';
+    let values = [question];
+ 
+    console.log(question);
+ 
+    pgclient.query(sql, values)
+    .then( answers => {
+      if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer){
+        opponentPoints++;
+        message.channel.send(`<@${opponent}> answered correctly`);
+ 
+        if(count > 0){
+          setTimeout( () => {
+           generateQuestionnaire(message);
+ 
+          },2000)
+        }
+      } else{
+        message.channel.send(`<@${opponent}> answered wrong`)
+      }
+ 
+    })
+   }
+
+   if(content[0] === '!stats' && content[1] === '!duel'){
+     let wins = 0;
+     let losses = 0;
+    opponent = content[2].split('<')[1].split('@')[1].split('>')[0].split('!')[1];
+    let sql = 'SELECT * FROM duels WHERE winner=$1;';
+    let values = [message.author.id];
+
+    pgclient.query(sql, values)
+    .then( results => {
+
+      for(let i = 0; i < results.rows.length; i++){
+        if(results.rows[i].loser === opponent){
+          wins++;
+        }
+
+      }
+
+      let sqlLoses = 'SELECT * FROM duels WHERE loser=$1;';
+      
+      pgclient.query(sqlLoses, values)
+      .then( results => {
+
+        for(let i = 0; i < results.rows.length; i++){
+          if(results.rows[i].winner === opponent){
+            losses++;
+          }
+  
+        }
+
+        const embed = new MessageEmbed()
+        .setTitle(`Stats for ${message.author.username} and ${message.mentions.users.first().username}`)
+        .setDescription(`${message.author.username} : Wins: ${wins} Losses: ${losses}
+        <@${opponent}> : Wins: ${losses} Losses: ${wins}
+        `)
+        message.channel.send(embed)
+
+      })
+      .catch(err => {
+        console.log(err);
+      })
+    })
+    .catch(error => {
+      console.log(error);
+    })
+
+   }
+
+  
+
+  console.log(opponent);
+  console.log(challenger);
 })
+
+function generateQuestionnaire(message){
+
+  if(count <= 0){
+    count = 11;
+  }
+
+  let sql = 'SELECT * from technical;';
+      pgclient.query(sql)
+      .then(results => {
+        
+        let max = results.rows.length;
+        let num = Math.floor(Math.random()*max);
+        
+            let somethingElse = results.rows[num].question.split('?');
+            question = results.rows[num].question;
+            const embed = new MessageEmbed()
+            .setTitle(somethingElse[0])
+            .setColor('#0099ff')
+            .setDescription(somethingElse[1])
+            message.channel.send(embed);
+            count--;
+            if(count <= 0){
+              setTimeout( () => {
+                if(challengerPoints > opponentPoints){
+                  saveResults(challenger, opponent, challenger, opponent);
+                  message.channel.send(`<@${challenger}> won. ${challengerPoints} /10 <@${opponent}> scored ${opponentPoints} /10`)
+                }
+
+                if(challengerPoints < opponentPoints){
+                  saveResults(challenger, opponent, opponent, challenger);
+                  message.channel.send(`<@${opponent}> won. ${opponentPoints} /10 <@${challenger}> scored ${challengerPoints} /10`)
+                }
+              },3000)
+
+              question = null;
+            }
+            console.log(count);
+            
+         
+      })
+}
+
+function saveResults(challenger, opponent, winner, loser){
+  let sql = `INSERT into duels(userOne_id, userTwo_id, winner, loser) values($1, $2, $3, $4);`;
+  let values = [challenger, opponent, winner, loser];
+
+  pgclient.query(sql, values)
+  .then( results => {
+    console.log('saveResults');
+  })
+}
 
 client.login(process.env.TOKEN);
