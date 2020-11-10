@@ -3,7 +3,7 @@
 let challenger = null;
 let opponent = null;
 let question = null;
-let count = 11;
+let count = 10;
 let challengerPoints = 0;
 let opponentPoints = 0;
 
@@ -149,11 +149,12 @@ client.on('message', (message)=> {
        message.channel.send(`<@${challenger}> answered correctly`);
 
        if(count > 0){
-         setTimeout( () => {
           generateQuestionnaire(message);
-
-         },2000)
        }
+       if( count === 0 ) {
+        question = null;
+        
+      }
      } else{
        message.channel.send(`<@${challenger}> answered wrong`)
      }
@@ -170,15 +171,15 @@ client.on('message', (message)=> {
  
     pgclient.query(sql, values)
     .then( answers => {
-      if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer){
+      if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer ){
         opponentPoints++;
         message.channel.send(`<@${opponent}> answered correctly`);
  
         if(count > 0){
-          setTimeout( () => {
            generateQuestionnaire(message);
- 
-          },2000)
+        }
+        if( count === 0 ) {
+          question = null;
         }
       } else{
         message.channel.send(`<@${opponent}> answered wrong`)
@@ -243,9 +244,12 @@ client.on('message', (message)=> {
 function generateQuestionnaire(message){
 
   if(count <= 0){
-    count = 11;
+    count = 10;
   }
 
+  if(count>0) {
+
+  
   let sql = 'SELECT * from technical;';
       pgclient.query(sql)
       .then(results => {
@@ -272,14 +276,19 @@ function generateQuestionnaire(message){
                   saveResults(challenger, opponent, opponent, challenger);
                   message.channel.send(`<@${opponent}> won. ${opponentPoints} /10 <@${challenger}> scored ${challengerPoints} /10`)
                 }
+
+                challenger = null;
+                challengerPoints = 0;
+                opponent = null;
+                opponentPoints = 0;
               },3000)
 
-              question = null;
             }
             console.log(count);
             
          
       })
+}
 }
 
 function saveResults(challenger, opponent, winner, loser){
