@@ -2,6 +2,7 @@ DROP TABLE completedChallenges;
 DROP TABLE challenges;
 DROP TABLE users;
 DROP TABLE duels;
+DROP TABLE technical;
 
 
 CREATE TABLE users(
@@ -25,10 +26,8 @@ CREATE TABLE completedChallenges(
 
 CREATE TABLE duels(
   id SERIAL PRIMARY KEY,
-  userOne_id INT NOT NULL,
-  FOREIGN KEY (userOne_id) REFERENCES users(id),
-  userTwo_id INT NOT NULL,
-  FOREIGN KEY (userTwo_id) REFERENCES users(id),
+  userOne_id VARCHAR(255) NOT NULL,
+  userTwo_id VARCHAR(255) NOT NULL,
   winner VARCHAR(255),
   loser VARCHAR(255)
 );
