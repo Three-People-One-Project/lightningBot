@@ -13,7 +13,10 @@ CREATE TABLE users(
 CREATE TABLE challenges(
   id SERIAL PRIMARY KEY,
   challenge_id VARCHAR(255),
-  challenge_name VARCHAR(255)
+  challenge_name VARCHAR(255),
+  lang VARCHAR(255),
+  dsa VARCHAR(255),
+  difficulty VARCHAR(255)
 );
 
 CREATE TABLE completedChallenges( 

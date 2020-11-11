@@ -53,7 +53,6 @@ function duel(message, MessageEmbed, dueling){
             message.channel.send(`<@${current}> answered wrong`)
             
           }
-          message.channel.send(dueling.count);
           if( dueling.count === 0 ) {
             dueling = generateQuestion(message, MessageEmbed, dueling);
             dueling.questionTracker = [];
