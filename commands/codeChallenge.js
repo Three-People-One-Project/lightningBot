@@ -5,14 +5,20 @@ require('dotenv').config();
 const pgclient = require('../middleware/pg.js');
 
 function codeChallenge(message, MessageEmbed){
-    
-    if(message.content==='!cc') {
+    let content = message.content.split(' ');
+    if(content[0]==='!cc' || message.content === '!cc') {
+
+      let sql = 'SELECT * FROM challenges;';
+      let values = [];
+      if(content[1] === 'javascript') {
+        values.push(content[1]);
+        sql = 'SELECT * FROM challenges WHERE lang=$1;';
+      }
         console.log(typeof message.author.id);
         let usersql = 'INSERT into users(discordID) values($1);';
         let uservalue = [message.author.id];
         pgclient.query(usersql,uservalue).then(()=>console.log('user profile added')).catch(err=>console.log(err));
-        let sql = 'SELECT * FROM challenges;';
-        pgclient.query(sql)
+        pgclient.query(sql,values)
           .then(query => {
             let min = 0;
             let max = query.rows.length;
@@ -39,6 +45,8 @@ function codeChallenge(message, MessageEmbed){
           }).catch(err => {
             console.log(err)
           })
+        
+    
       }
 }
 
