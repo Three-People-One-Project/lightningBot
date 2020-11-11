@@ -33,9 +33,11 @@ client.on('guildMemberAdd', (member)=> {
 })
 
 let duel = true;
-let challengeUser = ''
 
-client.on('message', (message)=> {
+client.on('message', messageListener);
+
+function messageListener(message){
+
   if(message.content==='!cc') {
     console.log(typeof message.author.id);
     let usersql = 'INSERT into users(discordID) values($1);';
@@ -74,8 +76,10 @@ client.on('message', (message)=> {
         console.log(err)
       })
   }
+
   let content = message.content.split(' ');
   let userId = '';
+
   if(content[0]==='!markcomplete') {
     let sql = 'SELECT id FROM users WHERE discordID=$1;';
     let values = [message.author.id];
@@ -108,7 +112,8 @@ client.on('message', (message)=> {
 
   }
 
-  if(content[0]==='!duel') {
+
+  if(content[0]==='!duel' && duel) {
 
     console.log(opponent);
     console.log(challenger);
@@ -145,21 +150,27 @@ client.on('message', (message)=> {
    pgclient.query(sql, values)
    .then( answers => {
      if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer){
+       client.removeListener('message', messageListener);
+      //  message.channel.send('listener off');
        challengerPoints++;
        message.channel.send(`<@${challenger}> answered correctly`);
 
        if(count > 0){
-          generateQuestionnaire(message);
-       }
-       if( count === 0 ) {
-        question = null;
-        
+         generateQuestionnaire(message).then(() => {
+           client.on('message', messageListener);
+          //  message.channel.send('listener on');
+         });
+          
+        }
+        if( count === 0 ) {
+          question = null;
+          
+        }
+      } else{
+        message.channel.send(`<@${challenger}> answered wrong`)
       }
-     } else{
-       message.channel.send(`<@${challenger}> answered wrong`)
-     }
-
-   })
+      
+    })
   }
 
   if(opponent === message.author.id && question !== null){
@@ -172,20 +183,25 @@ client.on('message', (message)=> {
     pgclient.query(sql, values)
     .then( answers => {
       if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer ){
+        // message.channel.send('listener off');
+        client.removeListener('message', messageListener);
         opponentPoints++;
         message.channel.send(`<@${opponent}> answered correctly`);
  
         if(count > 0){
-           generateQuestionnaire(message);
+           generateQuestionnaire(message).then(() => {
+            //  message.channel.send('listener on');
+            client.on('message', messageListener);
+           });
+          }
+          if( count === 0 ) {
+            question = null;
+          }
+        } else{
+          message.channel.send(`<@${opponent}> answered wrong`)
         }
-        if( count === 0 ) {
-          question = null;
-        }
-      } else{
-        message.channel.send(`<@${opponent}> answered wrong`)
-      }
- 
-    })
+        
+      })
    }
 
    if(content[0] === '!stats' && content[1] === '!duel'){
@@ -239,7 +255,8 @@ client.on('message', (message)=> {
 
   console.log(opponent);
   console.log(challenger);
-})
+}
+
 
 function generateQuestionnaire(message){
 
@@ -251,7 +268,7 @@ function generateQuestionnaire(message){
 
   
   let sql = 'SELECT * from technical;';
-      pgclient.query(sql)
+      return pgclient.query(sql)
       .then(results => {
         
         let max = results.rows.length;
