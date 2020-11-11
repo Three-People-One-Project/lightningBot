@@ -6,22 +6,30 @@ let count = require('./count.js');
 let question = require('./question.js');
 let challengerPoints = require('./challengerPoints.js');
 let opponentPoints = require('./opponentPoints.js');
+const duel = require('../commands/duel.js');
 
 function generateQuestionnaire(message, MessageEmbed, dueling){
-
-    if(dueling.count <= 0){
-      dueling.count = 10;
-    }
+   
   
     if(dueling.count>0) {
   
     
     let sql = 'SELECT * from technical;';
+    
         pgclient.query(sql)
         .then(results => {
-          
           let max = results.rows.length;
           let num = Math.floor(Math.random()*max);
+          if(dueling.questionTracker.length === 0){
+            dueling.questionTracker.push(results.rows[num].id);
+          } 
+          else if(dueling.questionTracker.length > 0 && dueling.questionTracker.length <= 10){
+            while(dueling.questionTracker.includes(results.rows[num].id)){
+              num = Math.floor(Math.random()*max);
+  
+            }
+            dueling.questionTracker.push(results.rows[num].id);
+          }
           
               let somethingElse = results.rows[num].question.split('?');
               dueling.question = results.rows[num].question;
@@ -30,30 +38,29 @@ function generateQuestionnaire(message, MessageEmbed, dueling){
               .setColor('#0099ff')
               .setDescription(somethingElse[1])
               message.channel.send(embed);
-              dueling.count--;
-              if(dueling.count <= 0){
-                setTimeout( () => {
-                  if(dueling.challengerPoints > dueling.opponentPoints){
-                    saveResults(dueling.challenger, dueling.opponent, dueling.challenger, dueling.opponent);
-                    message.channel.send(`<@${dueling.hallenger}> won. ${dueling.challengerPoints} /10 <@${dueling.opponent}> scored ${dueling.opponentPoints} /10`)
-                  }
-  
-                  if(dueling.challengerPoints < dueling.opponentPoints){
-                    saveResults(dueling.challenger, dueling.opponent, dueling.opponent, dueling.challenger);
-                    message.channel.send(`<@${dueling.opponent}> won. ${dueling.opponentPoints} /10 <@${dueling.challenger}> scored ${dueling.challengerPoints} /10`)
-                  }
-  
-                  dueling.challenger = null;
-                  dueling.challengerPoints = 0;
-                  dueling.opponent = null;
-                  dueling.opponentPoints = 0;
-                },3000)
-  
-              }              
+              dueling.count--; 
+                           
         })
   }
-  console.log(`generate question: ${dueling.question}`)
-  return dueling.question;
+
+  else if(dueling.count === 0){
+    setTimeout( () => {
+      if(dueling.challengerPoints > dueling.opponentPoints){
+        saveResults(dueling.challenger, dueling.opponent, dueling.challenger, dueling.opponent);
+        message.channel.send(`<@${dueling.challenger}> won. ${dueling.challengerPoints} /10 <@${dueling.opponent}> scored ${dueling.opponentPoints} /10`)
+      }
+
+      if(dueling.challengerPoints < dueling.opponentPoints){
+        saveResults(dueling.challenger, dueling.opponent, dueling.opponent, dueling.challenger);
+        message.channel.send(`<@${dueling.opponent}> won. ${dueling.opponentPoints} /10 <@${dueling.challenger}> scored ${dueling.challengerPoints} /10`)
+      }
+      dueling.challenger = null;
+      dueling.challengerPoints = 0;
+      dueling.opponent = null;
+      dueling.opponentPoints = 0;
+    },3000)
+  }
+  return dueling;
   }
 
   module.exports = generateQuestionnaire;

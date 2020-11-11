@@ -25,8 +25,7 @@ function startDuel(message, MessageEmbed, dueling){
     
     
           if(message.author.id === dueling.opponent){
-            dueling.question = generateQuestionnaire(message, MessageEmbed, dueling);
-            console.log(`dueling.question start duel: ${dueling.question}`)
+            dueling = generateQuestionnaire(message, MessageEmbed, dueling);
           }
     
           

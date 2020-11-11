@@ -1,27 +1,25 @@
 'use strict';
 
 const pgclient = require('../middleware/pg.js');
-const generateQuestionnaire = require('../middleware/generateQuestion.js');
+const generateQuestion = require('../middleware/generateQuestion.js');
 let opponent = require('../middleware/opponent.js');
 let opponentPoints = require('../middleware/opponentPoints.js');
 let challenger = require('../middleware/challenger.js');
 let challengerPoints = require('../middleware/challengerPoints.js');
 let question = require('../middleware/question.js');
-// let startDuel = require('./startDuel.js');
+let startDuel = require('./startDuel.js');
+const generateQuestionnaire = require('../middleware/generateQuestion.js');
 
 
 function duel(message, MessageEmbed, dueling){
-    // startDuel(message, MessageEmbed);
-   console.log(`message author: ${message.author.id}`)
-   console.log(`challenger: ${dueling.challenger}`)
-   console.log(`opponent: ${dueling.opponent}`)
-   console.log(`question: ${dueling.question}`)
+    dueling = startDuel(message, MessageEmbed, dueling);
+   
 
     
       if(dueling.challenger === message.author.id && dueling.question !== null || dueling.opponent === message.author.id && dueling.question !== null){
     
        let sql = 'SELECT * FROM technical WHERE question=$1;';
-       let values = [question];
+       let values = [dueling.question];
         let current = null;
         if(dueling.challenger === message.author.id){
             current = dueling.challenger;
@@ -31,8 +29,11 @@ function duel(message, MessageEmbed, dueling){
         }
        pgclient.query(sql, values)
        .then(answers => {
-         if(message.content === 'a' && message.content === answers.rows[0].answer || message.content === 'b' && message.content === answers.rows[0].answer){
-           client.removeListener('message', messageListener);
+
+        let response = message.content.toLowerCase();
+
+         if(response === 'a' && response === answers.rows[0].answer || response === 'b' && response === answers.rows[0].answer){
+          //  client.removeListener('message', messageListener);
           //  message.channel.send('listener off');
           if(message.author.id === dueling.challenger){
             dueling.challengerPoints++;
@@ -44,22 +45,28 @@ function duel(message, MessageEmbed, dueling){
           }
     
            if(dueling.count > 0){
-             generateQuestionnaire(message, MessageEmbed).then(() => {
-               client.on('message', messageListener);
-              //  message.channel.send('listener on');
-             });
+             dueling = generateQuestion(message, MessageEmbed, dueling);
               
             }
-            if( dueling.count === 0 ) {
-                dueling.question = null;
-              
-            }
-          } else{
-            message.channel.send(`<@${dueling.current}> answered wrong`)
+            
+          } else if(answers.rows[0].answer === 'a' && response === 'b' || answers.rows[0].answer === 'b' && response === 'a'){
+            message.channel.send(`<@${current}> answered wrong`)
+            
+          }
+          message.channel.send(dueling.count);
+          if( dueling.count === 0 ) {
+            dueling = generateQuestion(message, MessageEmbed, dueling);
+            dueling.questionTracker = [];
+              dueling.question = null;
+
+              dueling.count = 10;
+            
           }
           
         })
       }
+
+      return dueling;
 }
 
 module.exports = duel;
