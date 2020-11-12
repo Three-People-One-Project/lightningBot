@@ -1,8 +1,8 @@
 DROP TABLE completedChallenges;
 DROP TABLE challenges;
-DROP TABLE users;
 DROP TABLE duels;
 DROP TABLE technical;
+DROP TABLE users;
 
 
 CREATE TABLE users(
@@ -39,5 +39,11 @@ CREATE TABLE technical(
   id SERIAL PRIMARY KEY,
   question VARCHAR(255),
   answer VARCHAR(1)
+)
+
+CREATE TABLE knowledge(
+  id SERIAL PRIMARY KEY,
+  keyword VARCHAR(255),
+  knowledge TEXT
 )
 
