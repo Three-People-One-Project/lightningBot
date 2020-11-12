@@ -1,7 +1,6 @@
 'use strict';
 
 const pgclient = require('../middleware/pg.js');
-let opponent = require('../middleware/opponent.js');
 
 function stats(message, MessageEmbed){
     let content = message.content.split(' ');
@@ -11,7 +10,7 @@ function stats(message, MessageEmbed){
     if(content[0] === '!stats' && content[1] === '!duel'){
       let wins = 0;
       let losses = 0;
-     opponent = content[2].split('<')[1].split('@')[1].split('>')[0].split('!')[1];
+     let opponent = content[2].split('<')[1].split('@')[1].split('>')[0].split('!')[1];
      let sql = 'SELECT * FROM duels WHERE winner=$1;';
      let values = [message.author.id];
  
