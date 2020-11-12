@@ -2,16 +2,11 @@
 
 const pgclient = require('./pg.js');
 const saveResults = require('./saveResults.js');
-let count = require('./count.js');
-let question = require('./question.js');
-let challengerPoints = require('./challengerPoints.js');
-let opponentPoints = require('./opponentPoints.js');
-const duel = require('../commands/duel.js');
 
 function generateQuestionnaire(message, MessageEmbed, dueling){
    
   
-    if(dueling.count>0) {
+    if(dueling.count > 0) {
   
     
     let sql = 'SELECT * from technical;';
@@ -26,7 +21,6 @@ function generateQuestionnaire(message, MessageEmbed, dueling){
           else if(dueling.questionTracker.length > 0 && dueling.questionTracker.length <= 10){
             while(dueling.questionTracker.includes(results.rows[num].id)){
               num = Math.floor(Math.random()*max);
-  
             }
             dueling.questionTracker.push(results.rows[num].id);
           }
@@ -38,7 +32,7 @@ function generateQuestionnaire(message, MessageEmbed, dueling){
               .setColor('#0099ff')
               .setDescription(somethingElse[1])
               message.channel.send(embed);
-              dueling.count--; 
+              dueling.count--;
                            
         })
   }
@@ -54,6 +48,9 @@ function generateQuestionnaire(message, MessageEmbed, dueling){
         saveResults(dueling.challenger, dueling.opponent, dueling.opponent, dueling.challenger);
         message.channel.send(`<@${dueling.opponent}> won. ${dueling.opponentPoints} /10 <@${dueling.challenger}> scored ${dueling.challengerPoints} /10`)
       }
+      if(dueling.challengerPoints === dueling.opponentPoints){
+        generateQuestionnaire(message, MessageEmbed, dueling);
+      };
       dueling.challenger = null;
       dueling.challengerPoints = 0;
       dueling.opponent = null;
