@@ -1,0 +1,29 @@
+{
+  "name": "lightningBot",
+  "version": "1.0.0",
+  "description": "# Authors: * Bryant Davis, Leah Russo, Darius Lee Pasilaban *",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Three-People-One-Project/lightningBot.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Three-People-One-Project/lightningBot/issues"
+  },
+  "homepage": "https://github.com/Three-People-One-Project/lightningBot#readme",
+  "dependencies": {
+    "discord.js": "^12.4.1",
+    "dotenv": "^8.2.0",
+    "nodemon": "^2.0.6",
+    "pg": "^8.4.2",
+    "postgres": "^1.0.2",
+    "superagent": "^6.1.0"
+  }
+}
