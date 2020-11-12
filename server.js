@@ -4,6 +4,7 @@ const {Client,MessageEmbed} = require('discord.js')
 const client = new Client();
 
 require('dotenv').config();
+const helper = require('./commands/help.js');
 const pgclient = require('./middleware/pg.js');
 const codeChallenge = require('./commands/codeChallenge.js');
 const markComplete = require('./commands/markComplete.js');
@@ -46,6 +47,10 @@ client.on('message', (message)=> {
 });
 client.on('message', (message)=> {
   knowledge(message, MessageEmbed);
+});
+
+client.on('message', (message)=> {
+  helper(message, MessageEmbed);
 });
 
 client.login(process.env.TOKEN);
