@@ -4,7 +4,7 @@
   "description": "# Authors: * Bryant Davis, Leah Russo, Darius Lee Pasilaban *",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "jest --verbose --coverage",
     "start": "nodemon server.js"
   },
   "repository": {
@@ -21,6 +21,7 @@
   "dependencies": {
     "discord.js": "^12.4.1",
     "dotenv": "^8.2.0",
+    "jest": "^26.6.3",
     "nodemon": "^2.0.6",
     "pg": "^8.4.2",
     "postgres": "^1.0.2",
