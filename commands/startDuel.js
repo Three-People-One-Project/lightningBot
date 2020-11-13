@@ -9,6 +9,9 @@ function startDuel(message, MessageEmbed, dueling){
 
         if(content[1] === '!y' && dueling.opponent !== null){
           message.channel.send(`<@${dueling.opponent}> has accepted the challenge from <@${dueling.challenger}>`);
+          if(message.author.id === dueling.opponent){
+            dueling = generateQuestionnaire(message, MessageEmbed, dueling);
+          }
         }
     
         else if(content[1] !== '!y'){
@@ -21,15 +24,6 @@ function startDuel(message, MessageEmbed, dueling){
             message.channel.send(`${content[1]}, you've been challenged to a duel by <@${message.author.id}>! reply !duel !y to accept or reply !duel !n to deny`)
             dueling.opponent = content[1].split('<')[1].split('@')[1].split('>')[0].split('!')[1];
             dueling.challenger = message.author.id;
-          }
-    
-          
-        }
-        else if(content[1] === '!y' && dueling.challenger !== null){
-    
-    
-          if(message.author.id === dueling.opponent){
-            dueling = generateQuestionnaire(message, MessageEmbed, dueling);
           }
     
           
