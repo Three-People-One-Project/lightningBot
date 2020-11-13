@@ -4,6 +4,7 @@ const {Client,MessageEmbed} = require('discord.js')
 const client = new Client();
 
 require('dotenv').config();
+const helper = require('./commands/help.js');
 const pgclient = require('./middleware/pg.js');
 const codeChallenge = require('./commands/codeChallenge.js');
 const markComplete = require('./commands/markComplete.js');
@@ -11,6 +12,9 @@ const markComplete = require('./commands/markComplete.js');
 const duel = require('./commands/duel.js');
 const stats = require('./commands/stats.js');
 const guildMemberAdd = require('./commands/guildMemberAdd.js');
+const knowledge = require('./commands/kowledge.js');
+
+
 client.on('ready', ()=> {
   console.log(`Logged in as ${client.user.tag}`)
 })
@@ -37,11 +41,16 @@ client.on('message', (message)=> {
   // dueling = startDuel(message, MessageEmbed, dueling);
   dueling = duel(message, MessageEmbed, dueling);
 });
-// client.on('message', (message)=> {
-  
-// });
+
 client.on('message', (message)=> {
   stats(message, MessageEmbed);
+});
+client.on('message', (message)=> {
+  knowledge(message, MessageEmbed);
+});
+
+client.on('message', (message)=> {
+  helper(message, MessageEmbed);
 });
 
 client.login(process.env.TOKEN);

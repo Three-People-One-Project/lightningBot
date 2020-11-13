@@ -2,13 +2,7 @@
 
 const pgclient = require('../middleware/pg.js');
 const generateQuestion = require('../middleware/generateQuestion.js');
-let opponent = require('../middleware/opponent.js');
-let opponentPoints = require('../middleware/opponentPoints.js');
-let challenger = require('../middleware/challenger.js');
-let challengerPoints = require('../middleware/challengerPoints.js');
-let question = require('../middleware/question.js');
 let startDuel = require('./startDuel.js');
-const generateQuestionnaire = require('../middleware/generateQuestion.js');
 
 
 function duel(message, MessageEmbed, dueling){
@@ -43,11 +37,9 @@ function duel(message, MessageEmbed, dueling){
             dueling.opponentPoints++
             message.channel.send(`<@${dueling.opponent}> answered correctly`);
           }
-    
-           if(dueling.count > 0){
-             dueling = generateQuestion(message, MessageEmbed, dueling);
-              
-            }
+          if(dueling.count > 0){
+            dueling = generateQuestion(message, MessageEmbed, dueling);
+           }
             
           } else if(answers.rows[0].answer === 'a' && response === 'b' || answers.rows[0].answer === 'b' && response === 'a'){
             message.channel.send(`<@${current}> answered wrong`)
@@ -56,9 +48,8 @@ function duel(message, MessageEmbed, dueling){
           if( dueling.count === 0 ) {
             dueling = generateQuestion(message, MessageEmbed, dueling);
             dueling.questionTracker = [];
-              dueling.question = null;
-
-              dueling.count = 10;
+            dueling.question = null;
+            dueling.count = 10;
             
           }
           
